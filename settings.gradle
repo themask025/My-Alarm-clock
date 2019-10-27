@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name='My Alarm clock'
+rootProject.name='YourClock+'
