@@ -5,11 +5,14 @@
     <string name="tabItem_Timer">Timer</string>
     <string name="add_alarm_label">Add alarm</string>
     <string name="setAlarmNamelabel">Alarm name</string>
-    <string name="setAlarmNameHint">Wake up! (tap to edit)</string>
+    <string name="setAlarmNameHint">Enter alarm name here</string>
     <string name="setAlarmName">Wake up! (tap to edit)</string>
     <string name="defaultAlarmName">Wake up!</string>
     <string name="btnCancel">Cancel</string>
     <string name="btnSetAlarm">Set</string>
     <string name="text_dialog">Ready!</string>
     <string name="textViewNoAlarms">Feel Sleepy?\nAdd an alarm to wake up on time.</string>
+    <string name="context_menu_title">Alarm options</string>
+    <string name="context_menu_edit">Edit</string>
+    <string name="context_menu_delete">Delete</string>
 </resources>

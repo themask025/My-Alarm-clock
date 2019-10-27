@@ -48,8 +48,8 @@ public class AddAlarmActivity extends AppCompatActivity {
 
                 String newDate = (String.format("%02d:%02d", picker.getHour(), picker.getMinute()));
                 String newName = setAlarmName.getText().toString();
-                if (newName.equals("@string/setAlarmName"))
-                    newName = "@string/defaultAlarmName";
+                if (newName.equals(getResources().getString(R.string.setAlarmName)))
+                    newName = getResources().getString(R.string.defaultAlarmName);
 
                 if(setAlarmName.length()!= 0){
                     boolean insertData = myDB.addData(newDate, newName);

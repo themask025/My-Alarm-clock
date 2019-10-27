@@ -8,12 +8,18 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
+import android.view.ContextMenu;
 import android.view.Gravity;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,29 +55,30 @@ public class MainActivity extends AppCompatActivity {
                         int rows = cur.getCount();
                         int cols = cur.getColumnCount();
 
-                            TableRow row = new TableRow(this);
-                            row.setLayoutParams(new TableRow.LayoutParams(
-                                    TableRow.LayoutParams.MATCH_PARENT,
-                                    TableRow.LayoutParams.WRAP_CONTENT));
+                        TableRow row = new TableRow(this);
+                        row.setLayoutParams(new TableRow.LayoutParams(
+                                TableRow.LayoutParams.MATCH_PARENT,
+                                TableRow.LayoutParams.WRAP_CONTENT));
 
-                            // inner for loop
-                            for (int j = 1; j < cols; j++) {
+                        // inner for loop
+                        for (int j = 1; j < cols; j++) {
 
-                                TextView tv = new TextView(this);
-                                tv.setLayoutParams(new TableRow.LayoutParams(
-                                        TableLayout.LayoutParams.WRAP_CONTENT,
-                                        TableLayout.LayoutParams.WRAP_CONTENT));
-                                tv.setGravity(Gravity.CENTER);
-                                if(j==1)
-                                    tv.setTextSize(40);
-                                else
-                                    tv.setTextSize(20);
-                                tv.setPadding(15, 10, 0, 10);
-                                tv.setText(cur.getString(j));
-                                row.addView(tv);
+                            TextView tv = new TextView(this);
+                            tv.setLayoutParams(new TableRow.LayoutParams(
+                                    TableLayout.LayoutParams.WRAP_CONTENT,
+                                    TableLayout.LayoutParams.WRAP_CONTENT));
+                            tv.setGravity(Gravity.CENTER);
+                            if(j==1)
+                                tv.setTextSize(40);
+                            else
+                                tv.setTextSize(20);
+                            tv.setPadding(15, 10, 0, 10);
+                            tv.setText(cur.getString(j));
+                            row.addView(tv);
+                        }
 
-                            }
-                            table.addView(row);
+                        table.addView(row);
+                        registerForContextMenu(row);
 
                     } while (cur.moveToNext());
                 }
@@ -82,19 +89,31 @@ public class MainActivity extends AppCompatActivity {
         } catch (SQLException mSQLException) {
             throw mSQLException;
         }
+    }
 
-        for(int i = 0, j = table.getChildCount(); i < j; i++) {
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.setHeaderTitle(R.string.context_menu_title);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.context_menu_alarms_table, menu);
+    }
 
-            if(i!=0){
-                View view = table.getChildAt(i-1);
-                View view1 = table.getChildAt(i);
-                TableRow rowPrevious = (TableRow) view;
-                TableRow rowCurrent = (TableRow) view1;
-                if( rowCurrent == rowPrevious ) {
-                    table.removeView(rowCurrent);
-                }
-            }
-
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.edit:
+                Toast.makeText(this, "Pressed \"Edit\"", Toast.LENGTH_LONG).show();
+                return true;
+            case R.id.delete:
+                Toast.makeText(this, String.valueOf(item.getItemId()), Toast.LENGTH_LONG).show();
+                myDB.removeData (String.valueOf(item.getItemId()));
+                populateAlarmsTable();
+                return true;
+            default:
+                return super.onContextItemSelected(item);
         }
     }
 
