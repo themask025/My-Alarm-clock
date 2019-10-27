@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -34,8 +35,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean addData(String date, String name) {
+    public int addData(String date, String name) {
         SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur =  db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+        for(int i = 0; i<cur.getCount(); i++){
+            if(date == cur.getString(1)){
+                return 2; //error code 2 -> "Alarm already set."
+            }
+        }
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL2, date);
         contentValues.put(COL3, name);
@@ -44,20 +51,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         //if data is inserted incorrectly it will return -1
         if (result == -1) {
-            return false;
+            return 1; //error code 1 -> Problem with inserting to DB.
         } else {
-            return true;
+            return 0; //code 0 -> Inserted successfully.
         }
     }
+
     public Cursor getData(){
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor data = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
-        return data;
+        return db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
     }
 
-    public boolean removeData(String name)
-    {
+    public boolean removeData(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(TABLE_NAME, COL1 + "=" + name, null) > 0;
+    }
+
+    public void cleanDatabase(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL(" DROP TABLE " + TABLE_NAME);
+        this.onCreate(db);
     }
 }

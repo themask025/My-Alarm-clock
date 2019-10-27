@@ -52,12 +52,22 @@ public class AddAlarmActivity extends AppCompatActivity {
                     newName = getResources().getString(R.string.defaultAlarmName);
 
                 if(setAlarmName.length()!= 0){
-                    boolean insertData = myDB.addData(newDate, newName);
-                    if(insertData)
-                        showDialog(AddAlarmActivity.this);
-                    else
-                        Toast.makeText(AddAlarmActivity.this, "Something went wrong with DB :(.", Toast.LENGTH_LONG).show();
-
+                    int insertData = myDB.addData(newDate, newName);
+                    switch (insertData) {
+                        case 0:
+                            showDialog(AddAlarmActivity.this);
+                            break;
+                        case 1:
+                            Toast.makeText(AddAlarmActivity.this, "Something went wrong with DB :(.", Toast.LENGTH_LONG).show();
+                            break;
+                        case 2:
+                            Toast.makeText(AddAlarmActivity.this, "Alarm already set.", Toast.LENGTH_LONG).show();
+                            finish();
+                            break;
+                        default:
+                            Toast.makeText(AddAlarmActivity.this, "Something went wrong.", Toast.LENGTH_LONG).show();
+                            break;
+                    }
                 }else {
                     makeText(AddAlarmActivity.this, "Invalid alarm name!", Toast.LENGTH_LONG).show();
                 }

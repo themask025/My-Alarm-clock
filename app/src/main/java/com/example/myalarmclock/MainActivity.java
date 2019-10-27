@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                     do {
                         int rows = cur.getCount();
                         int cols = cur.getColumnCount();
-                        final String rowIndex = cur.getString(1);
+                        final String rowIndex = cur.getString(0);
 
                         TableRow row = new TableRow(this);
                         row.setLayoutParams(new TableRow.LayoutParams(
@@ -116,14 +116,20 @@ public class MainActivity extends AppCompatActivity {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         Intent intent = getIntent();
         String id = intent.getStringExtra("rowID");
+        Toast.makeText(this, id, Toast.LENGTH_LONG).show();
+
         switch (item.getItemId()) {
             case R.id.edit:
-                Toast.makeText(this, "Pressed \"Edit\"", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Pressed \"Edit\"", Toast.LENGTH_LONG).show();
                 return true;
             case R.id.delete:
-                Toast.makeText(this, String.valueOf(item.getItemId()), Toast.LENGTH_LONG).show();
-                myDB.removeData (id);
+                if(myDB.removeData (id))
+                    Toast.makeText(this, "Alarm deleted successfully.", Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(this, "Couldn't delete alarm.", Toast.LENGTH_LONG).show();
                 populateAlarmsTable();
+                if(table.getChildCount() == 0)
+                    myDB.cleanDatabase();
                 return true;
             default:
                 return super.onContextItemSelected(item);
