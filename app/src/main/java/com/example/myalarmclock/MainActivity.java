@@ -54,13 +54,13 @@ public class MainActivity extends AppCompatActivity {
                     do {
                         int rows = cur.getCount();
                         int cols = cur.getColumnCount();
+                        final String rowIndex = cur.getString(1);
 
                         TableRow row = new TableRow(this);
                         row.setLayoutParams(new TableRow.LayoutParams(
                                 TableRow.LayoutParams.MATCH_PARENT,
                                 TableRow.LayoutParams.WRAP_CONTENT));
 
-                        // inner for loop
                         for (int j = 1; j < cols; j++) {
 
                             TextView tv = new TextView(this);
@@ -78,7 +78,18 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         table.addView(row);
-                        registerForContextMenu(row);
+                        row.setLongClickable(true);
+                        row.setOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                String id = rowIndex;
+                                setIntent(getIntent().putExtra("rowID", rowIndex));
+                                registerForContextMenu(v);
+                                openContextMenu(v);
+                                unregisterForContextMenu(v);
+                                return true;
+                            }
+                        });
 
                     } while (cur.moveToNext());
                 }
@@ -103,13 +114,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        Intent intent = getIntent();
+        String id = intent.getStringExtra("rowID");
         switch (item.getItemId()) {
             case R.id.edit:
                 Toast.makeText(this, "Pressed \"Edit\"", Toast.LENGTH_LONG).show();
                 return true;
             case R.id.delete:
                 Toast.makeText(this, String.valueOf(item.getItemId()), Toast.LENGTH_LONG).show();
-                myDB.removeData (String.valueOf(item.getItemId()));
+                myDB.removeData (id);
                 populateAlarmsTable();
                 return true;
             default:
