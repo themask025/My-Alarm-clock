@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Alarm clock</string>
+    <string name="app_name">Your Clock +</string>
     <string name="tabItem_Alarm">Alarm</string>
     <string name="tabItem_Stopwatch">Stopwatch</string>
     <string name="tabItem_Timer">Timer</string>
