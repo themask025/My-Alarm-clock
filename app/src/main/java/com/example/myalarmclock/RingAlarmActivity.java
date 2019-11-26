@@ -30,7 +30,7 @@ public class RingAlarmActivity extends Activity {
         context = this;
         myDB = new DatabaseHelper(this);
         calendar = Calendar.getInstance();
-        displayTime.setText(String.format("%02d:%02d", calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)));
+        //displayTime.setText(String.format("%02d:%02d", calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)));
         btnFinish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

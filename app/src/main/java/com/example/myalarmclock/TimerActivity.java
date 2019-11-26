@@ -86,7 +86,8 @@ public class TimerActivity extends Activity {
             public void onClick(View v) {
 
                 myCountDownTimer.cancel();
-
+                if(media_song2.isPlaying())
+                    media_song2.stop();
             }
         });
 
