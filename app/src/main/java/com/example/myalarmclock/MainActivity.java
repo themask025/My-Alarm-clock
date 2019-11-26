@@ -2,6 +2,7 @@ package com.example.myalarmclock;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -27,10 +28,12 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
+    //variables for visualizing the alarms
     TableLayout table;
     DatabaseHelper myDB;
     TextView noAlarmsMessage;
 
+    //variables for setting the alarms
     AlarmManager alarm_manager;
     Context context;
     PendingIntent pending_intent = null;
@@ -38,8 +41,10 @@ public class MainActivity extends AppCompatActivity {
 
     int alarmID;
 
+    //variables for edit alarm option
     Calendar calendar;
     Intent my_intent;
+    String editedAlarmID;
 
 
     @Override
@@ -51,12 +56,8 @@ public class MainActivity extends AppCompatActivity {
         noAlarmsMessage = (TextView)this.findViewById(R.id.textViewNoAlarms);
 
 
-
-        /*
-        all the code from whaleclock responsible for alarms
-         */
-
         this.context = this;
+
         // initialize our alarm manager
         alarm_manager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
@@ -65,10 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
         // create an intent to the Alarm Receiver class
         my_intent = new Intent(this.context, AlarmReceiver.class);
-
-        /*
-        ends here
-         */
 
         populateAlarmsTable();
         setAlarms();
@@ -84,9 +81,10 @@ public class MainActivity extends AppCompatActivity {
     //gets alarms from database in a tableView
     public void populateAlarmsTable() {
 
-        //cleans the table for the new entries
+        //cleans the tableView for the new entries
         table.removeAllViews();
 
+        //gets all the entries in a cursor
         Cursor cur = myDB.getData();
 
         //fills the table with entries
@@ -159,56 +157,57 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //activates all the alarms from the tableView
+    //activates first alarm from the tableView
     public void setAlarms() {
 
         Cursor cur = myDB.getData();
         if (cur.getCount() != 0) {
-            if (cur.moveToLast()) {
-                do {
-                    //initializing variables
-                    alarmID = Integer.parseInt(cur.getString(0));
-                    Log.e("alarm_logs", String.valueOf(alarmID));
+            if (cur.moveToFirst()) {
 
-                    //setting the calendar
-                    final String[] alarmDate = cur.getString(1).split(":");
-                    final int hour = Integer.parseInt(alarmDate[0]);
-                    final int minute = Integer.parseInt(alarmDate[1]);
+                //initializing variables
+                alarmID = Integer.parseInt(cur.getString(0));
+                Log.e("alarm_logs", String.valueOf(alarmID));
 
-                    calendar.set(Calendar.HOUR_OF_DAY, hour);
-                    calendar.set(Calendar.MINUTE, minute);
+                //setting the calendar
+                final String[] alarmDate = cur.getString(1).split(":");
+                final int hour = Integer.parseInt(alarmDate[0]);
+                final int minute = Integer.parseInt(alarmDate[1]);
 
-                    //put in extra string into my_intent
-                    //tells the clock that we've activated the alarm
-                    my_intent.putExtra("extra", "alarm on");
+                calendar.set(Calendar.HOUR_OF_DAY, hour);
+                calendar.set(Calendar.MINUTE, minute);
 
-                    //some extra extras
-                    my_intent.putExtra("alarmDate", cur.getString(1));
-                    my_intent.putExtra("alarmID", Integer.parseInt(cur.getString(0)));
+                //put in extra string into my_intent
+                //tells the clock that we've activated the alarm
+                my_intent.putExtra("extra", "alarm on");
 
-                    Log.e("alarm_logs", "Read ID in main activity: " + alarmID);
-                    Log.e("alarm_logs", "Read Date in main activity: " + alarmDate);
+                //some extra extras
+                my_intent.putExtra("alarmDate", cur.getString(1));
+                my_intent.putExtra("alarmID", Integer.parseInt(cur.getString(0)));
 
-
-                    //cancelling previous pending intent
-                    if (pending_intent != null){
-                        alarm_manager.cancel(pending_intent);
-                        Log.e("alarm_logs", "intent id " + alarmID + " cancelled.");
-                    }
+                Log.e("alarm_logs", "Read ID in main activity: " + alarmID);
+                Log.e("alarm_logs", "Read Date in main activity: " + alarmDate);
 
 
-                    // create a pending intent that delays the intent
-                    // until the specified calendar time
-                    pending_intent = PendingIntent.getBroadcast(MainActivity.this, alarmID, my_intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                //cancelling previous pending intent
+                if (pending_intent != null){
+                    alarm_manager.cancel(pending_intent);
+                    Log.e("alarm_logs", "intent id " + alarmID + " cancelled.");
+                }
 
-                    // set the alarm manager
-                    alarm_manager.setAlarmClock(new AlarmManager.AlarmClockInfo(calendar.getTimeInMillis(),
-                            pending_intent), pending_intent);
 
-                    Log.e("alarm_logs", "pending intent sent.");
+                // create a pending intent that delays the intent
+                // until the specified calendar time
+                pending_intent = PendingIntent.getBroadcast(MainActivity.this, alarmID, my_intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                } while (cur.moveToNext());
+                // set the alarm manager
+                alarm_manager.setAlarmClock(new AlarmManager.AlarmClockInfo(calendar.getTimeInMillis(),
+                        pending_intent), pending_intent);
+
+                Log.e("alarm_logs", "pending intent sent.");
+
             }
+            else
+                Toast.makeText(context, "Couldn't activate your alarms :*(.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -225,40 +224,48 @@ public class MainActivity extends AppCompatActivity {
     //context menu items
     @Override
     public boolean onContextItemSelected(MenuItem item) {
+
+        //initializing variables
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         Intent intent = getIntent();
         String id = intent.getStringExtra("rowID");
-        String name = intent.getStringExtra("rowName");
-        String date = intent.getStringExtra("rowDate");
-        Toast.makeText(this, id, Toast.LENGTH_LONG).show();
 
+        //actions for the two options
         switch (item.getItemId()) {
             case R.id.edit:
 
+                //calls AddAlarmActivity for result
                 Intent callEditor = new Intent(this, AddAlarmActivity.class);
-                startActivity(callEditor);
+                startActivityForResult(callEditor, 1);
+                editedAlarmID = id;
                 return true;
 
             case R.id.delete:
 
+                //cancels the alarm
                 alarm_manager.cancel(pending_intent);
 
-                // put extra string into my_intent
-                // tells the clock that you pressed the "alarm off" button
+                //extra for stopping the ringtone
                 my_intent.putExtra("extra", "alarm off");
+
                 // also put an extra int into the alarm off section
                 // to prevent crashes in a Null Pointer Exception
                 my_intent.putExtra("whale_choice", choose_whale_sound);
 
-                // stop the ringtone
+                // stops the ringtone
                 sendBroadcast(my_intent);
 
+                //removes the alarm entry from the database
                 if(myDB.removeData(id))
                     Toast.makeText(this, "Alarm deleted successfully.", Toast.LENGTH_LONG).show();
                 else
                     Toast.makeText(this, "Couldn't delete alarm.", Toast.LENGTH_LONG).show();
-                populateAlarmsTable();
 
+                //refreshes the Activity
+                populateAlarmsTable();
+                setAlarms();
+
+                //resets the tableView if it goes empty
                 if(table.getChildCount() == 0)
                     myDB.cleanDatabase();
                 return true;
@@ -268,12 +275,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //handles the result from editing the alarm in AddAlarmActivity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+
+                //removes the old alarm entry
+                myDB.removeData(editedAlarmID);
+
+                //refreshes the Activity
+                populateAlarmsTable();
+                setAlarms();
+            }
+        }
+    }
 
     //starts AddAlarmActivity when the plus-button is pressed
-    public void sendMessage(View view){
+    public void addAlarm(View view){
         Intent intent = new Intent(this, AddAlarmActivity.class);
         startActivity(intent);
     }
 
+    public void startStopwatch(View view){
+        Intent intent = new Intent(this, StopwatchActivity.class);
+        startActivity(intent);
+    }
+
+    public void startTimer(View view){
+        Intent intent = new Intent(this, TimerActivity.class);
+        startActivity(intent);
+    }
 
 }

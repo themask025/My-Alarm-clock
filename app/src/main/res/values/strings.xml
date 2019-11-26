@@ -15,4 +15,6 @@
     <string name="context_menu_title">Alarm options</string>
     <string name="context_menu_edit">Edit</string>
     <string name="context_menu_delete">Delete</string>
+    <string name="alarm_recommendation_header">Recommended alarms:</string>
+    <string name="btnDismissAlarm">I\'m awake!</string>
 </resources>
